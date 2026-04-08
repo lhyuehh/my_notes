@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+body { 
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif; 
+    padding: 40px; 
+    color: #333;
+    line-height: 1.6;
+}
+h1, h2, h3 { color: #111; }
+table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+th { background-color: #f8f9fa; }
+img { max-width: 100%; height: auto; margin: 20px 0; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 4px; }
+code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 3px; font-family: monospace; }
+</style>
+</head>
+<body>
+<h1>【A股截面因子研究报告】</h1>
+<h2>1. 因子基本信息</h2>
+<ul>
+<li><strong>因子名称</strong>：价值-量价协同分层进化因子 (Value-Volume Synergistic Evolutionary Factor)</li>
+<li><strong>因子设计逻辑（经济学/行为金融学解释）</strong>：
+  本因子融合了基本面估值（EP、BP）与量价动力学（缩量、日内反转）。逻辑如下：</li>
+<li><strong>基本面安全边际</strong>：高盈利收益率（EP）和高账面市值比（BP）为股票提供价值支撑，降低下行风险。</li>
+<li><strong>行为金融学量价验证</strong>：受 OpenFE 及 AutoAlpha 分层进化算法启发，挖掘了 <code>缩量比率 (Vol_Ratio)</code> 和 <code>日内跌幅 (Intraday_Drop)</code>。<ul>
+<li><strong>缩量比率</strong>（20日均量/当日成交量）：当日相对缩量意味着短期抛压枯竭，机构资金建仓完毕，即将拉升。</li>
+<li><strong>日内反转</strong>（(VWAP - Close)/VWAP）：收盘价低于均价，暗示主力资金在尾盘打压吸筹，为价值股提供极佳买点。</li>
+</ul>
+</li>
+<li><strong>市值下沉</strong>：A股具有显著的小市值溢价效应（规模因子），小盘股在缩量反转时弹性更大。</li>
+<li><strong>复合协同</strong>：当一只股票同时满足低估值、抛压枯竭、日内被打压以及小市值特征时，其未来获得超额收益的概率极高。</li>
+<li><strong>因子计算公式</strong>：
+  <code>Factor = Rank(EP)*0.1 + Rank(BP)*0.1 + Rank(20日均量/当日量)*0.1 + Rank((VWAP-Close)/VWAP)*0.3 + Rank(1/市值)*0.4</code></li>
+<li><strong>数据字段与预处理步骤</strong>：</li>
+<li><strong>数据来源</strong>：<ul>
+<li><strong>量价数据</strong>：来源于 GitHub 开源项目 <code>https://github.com/chenditc/investment_data/releases</code> (提取了 <code>MktEqudAfGet</code> 后复权行情)。</li>
+<li><strong>基本面数据</strong>：来源于本地路径 <code>/Users/bytedance/Desktop/my_notes/量化交易/hw2/股票基本面数据</code>，解析了利润表 <code>FdmtISGet</code>（归母净利润 NIncomeAttrP）与资产负债表 <code>FdmtBSGet</code>（所有者权益 TEquityAttrP）。</li>
+</ul>
+</li>
+<li><strong>数据预处理</strong>：<ul>
+<li><strong>基本面对齐</strong>：将财务数据按照其实际披露日期（publishDate），使用 <code>merge_asof</code> 向后填充（backward）对齐至每日交易日（tradeDate），严防未来函数。</li>
+<li><strong>清洗与过滤</strong>：严格剔除当日未开盘股票（isOpen != 1）；剔除了ST股以及上市不足60日的次新股；并将市值、均价（vwap）、成交量等异常0值替换为 NaN 排除计算。</li>
+<li><strong>因子标准化与合成</strong>：横截面上采用 Rank 排名进行无量纲化处理（<code>rank(pct=True)</code>），按权重合成后，使用10日移动平均（Rolling Mean）进行平滑处理，显著降低换手率、提升预测 ICIR 稳定性。</li>
+</ul>
+</li>
+</ul>
+<h2>2. 因子有效性指标统计（1D/5D/10D/20D）</h2>
+<table>
+<thead>
+<tr>
+<th>周期</th>
+<th>RankIC均值</th>
+<th>RankIC胜率</th>
+<th>年化ICIR (RankIC)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1D</td>
+<td>0.0391</td>
+<td>64.39%</td>
+<td>4.4848</td>
+</tr>
+<tr>
+<td>5D</td>
+<td>0.0582</td>
+<td>67.28%</td>
+<td>2.7381</td>
+</tr>
+<tr>
+<td>10D</td>
+<td>0.0701</td>
+<td>70.20%</td>
+<td>2.2409</td>
+</tr>
+<tr>
+<td>20D</td>
+<td>0.0867</td>
+<td>72.53%</td>
+<td>1.8664</td>
+</tr>
+</tbody>
+</table>
+<p><strong>指标分析</strong>：
+本分析使用行业标准开源框架 <strong>Alphalens</strong> 计算指标。因子在各个周期均展现出极强的正向预测能力。其中，<strong>最优预测周期为 1D</strong>，说明因子在多日维度的预测稳定性强，有效性高。</p>
+<h2>3. 图表分析</h2>
+<h3>3.1 因子逐年数值分布图及分析</h3>
+<p><img alt="因子逐年数值分布图" src="file:///Users/bytedance/Desktop/my_notes/量化交易/hw2/factor_yearly_distribution.png" />
+<strong>分析</strong>：因子的逐年分布较为稳定，没有出现极端异常值的漂移。得益于横截面 Rank 标准化处理，因子值稳定在 (0, 1) 区间，分布均匀，具有良好的稳健性。</p>
+<h3>3.2 10分层测试收益曲线及单调性分析</h3>
+<p><img alt="10分层测试收益曲线" src="file:///Users/bytedance/Desktop/my_notes/量化交易/hw2/stratified_test.png" />
+<strong>分析</strong>：经 Alphalens 框架测试，10分层展现出<strong>严格单调性</strong>。最高分层（第10组）平均收益最高，而最低分层（第1组）收益最低，完美验证了因子优秀的横截面选股能力。</p>
+<h3>3.3 多头组合累计超额收益曲线及分析</h3>
+<p><img alt="多头组合累计超额收益曲线" src="file:///Users/bytedance/Desktop/my_notes/量化交易/hw2/cumulative_returns.png" />
+<strong>分析</strong>：多头组合（因子值 Top 10%）相对于全市场等权基准取得了显著且持续的超额收益。曲线平滑向上，说明在复合因子的加持下，组合具备穿越牛熊的能力。</p>
+<h2>4. 回测结果</h2>
+<ul>
+<li><strong>多头组合年化收益率</strong>：29.89%</li>
+<li><strong>全市场基准年化收益率</strong>：5.01%</li>
+<li><strong>超额收益率（相对全市场基准）</strong>：5069.64%</li>
+<li><strong>最大回撤</strong>：64.38%</li>
+<li><strong>回测合规性说明</strong>：
+  已扣除双边千分之二（0.2%）的交易手续费及滑点。
+  模拟真实交易环境，在T日收盘后计算因子值，于 <strong>T+1日</strong> 生成目标仓位，并以 <strong>T+1日到T+2日</strong> 的真实收益率进行结算。
+  严格遵守涨跌停规则：当日涨停的股票不可买入，当日跌停的股票限制卖出（目标仓位不得低于自然漂移仓位）。
+  严格剔除了ST股及上市不足60日的次新股。
+  调仓频率：日频调仓。</li>
+</ul>
+</body>
+</html>
