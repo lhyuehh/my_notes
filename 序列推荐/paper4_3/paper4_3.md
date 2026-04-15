@@ -1,10 +1,14 @@
 ## Recommender Systems with Generative Retrieval（Tiger）
+### 综诉
+P5模型
+![alt text](image-1.png)
+
 ### Model 
 #### 核心创新点 
-#### 核心能力
 将语义 ID 融入序列到序列模型可提升模型泛化能力，这一点在无历史交互物品的召回性能提升上得到验证
-
-
+#### 核心能力
+给定物品的文本特征，我们使用预训练文本编码器（如 SentenceT5 [27]/BERT [7]）生成稠密的内容嵌入，再对物品嵌入进行量化处理，得到一组有序的标记 / 码字，即该物品的语义 ID。最终，我们使用这些语义 ID 训练 Transformer 模型，以完成序列推荐任务
+![alt text](image.png)
 
 ## Beyond Unimodal Boundaries: Generative Recommendation with Multimodal Semantics
 ### Model 核心创新点
