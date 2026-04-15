@@ -1,0 +1,34 @@
+git checkout -f f508bf7970f3 切换到commit f强制覆盖
+# 从暂存区移除（但保留本地文件）
+git rm --cached thoth-1b2-v5/pytorch_model.bin
+
+某一分支有新commit，基于老版本commit开发在git push出现问题
+git checkout c13ee7455f245113225fea87624c0859bf2f829d
+...
+直接git push fatal: You are not currently on a branch.
+git push origin HEAD:ttls_poi_rel（原分支）
+ ! [rejected]          HEAD -> ttls_poi_rel (non-fast-forward)
+error: failed to push some refs to 'code.byted.org:yujunshuai.08/ttls_rel_llama_factory.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and integrate the remote changes
+hint: (e.g. 'git pull ...') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+因为已有新commit
+
+最后创建新分支
+git checkout -b ttls_poi_rel_qwen
+git push origin ttls_poi_rel_qwen
+
+# 有大文件commit后，删除大文件重新commit无法成功
+git add -u
+#- ✅ 会处理 ：已经被 Git 追踪的文件的 修改 (Modified) 。
+#- ✅ 会处理 ：已经被 Git 追踪的文件的 删除 (Deleted) 。
+#- ❌ 不处理 ：您刚刚新建、且从来没被 git add 过的 新文件 (Untracked) 。
+#git add . (点代表当前目录)
+#- ✅ 会处理 ：已经被 Git 追踪的文件的 修改 (Modified) 。
+#- ✅ 会处理 ：刚刚新建的 新文件 (Untracked) 。
+git commit --amend --no-edit
+git push
+
+
+

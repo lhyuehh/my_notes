@@ -1,0 +1,31 @@
+hdfs dfs -cat
+hdfs dfs -ls 
+hdfs dfs -put /home/tiger/case_data_resolve/llm_annotated.jsonl hdfs://harunava/user/
+hdfs dfs -mkdir -p hdfs://.../user/
+doas hdfs dfs -rm hdfs://.../user/
+hdfs dfs -count -q -h hdfs://.../user/
+hdfs dfs -rm -r /user/test/empty_dir
+# 加管道符统计行数
+dls hdfs://.../user/ |wc -l
+- w单词数 - c字节数 - m字符数
+#重命名
+alias dls='doas hadoop fs -ls '
+alias dget='doas hadoop fs -get '
+alias dput='doas hadoop fs -put '
+alias dmv='doas hadoop fs -mv '
+alias drm='doas hadoop fs -rm '
+alias dmkdir='doas hadoop fs -mkdir '
+alias dcat='doas hadoop fs -cat '
+alias dtext='doas hadoop fs -text '
+alias ddu='doas hadoop fs -du -h '
+alias dcp='doas hadoop fs -cp  '
+alias ll='ls -lh '
+vim ~/.bashrc
+Source ~/.bashrc
+
+if [[ $- == *i* ]]
+then
+    bind '"\e[A": history-search-backward'
+    bind '"\e[B": history-search-forward'
+fi
+# 写到 .bashrc 里可以按上下方向键调取同前缀的历史命令

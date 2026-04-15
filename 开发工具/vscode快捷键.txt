@@ -1,0 +1,4 @@
+Command + Shift + L:多光标
+ctrl+c,ctrl+shift+v 实现公式数字黏贴
+Vim里G(跳转到末尾行首个字)+A(最后一行末尾)，a是最后一行行首
+ctrl+P快速查找文件名
